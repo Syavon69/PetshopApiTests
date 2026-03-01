@@ -118,3 +118,41 @@ class TestPet:
         with allure.step("Проверка статуса ответа и данных питомца"):
             assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
             assert response.json()["id"] == pet_id, "id питомца не совпал с ожидаемым"
+
+    @allure.title("Попытка обновления информации о питомце")
+    def test_update_pet(self, create_pet):
+        with allure.step("Подготовка ID созданного питомца"):
+            pet_id = create_pet["id"]
+
+        with allure.step("Подготовка данных для обновления питомца"):
+            payload = {
+                "id": pet_id,
+                "name": "Buddy Updated",
+                "status": "sold"
+            }
+
+        with allure.step("Отправка запроса на обновление информации о питомце"):
+            response = requests.put(f"{BASE_URL}/pet", json=payload)
+
+        with allure.step("Проверка статуса ответа и новых данных питомца"):
+            assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
+            assert response.json()["id"] == pet_id, "id питомца не совпал с ожидаемым"
+            assert response.json()["name"] == payload["name"], "имя питомца не совпало с ожидаемым"
+            assert response.json()["status"] == payload["status"], "статус питомца не совпал с ожидаемым"
+
+    @allure.title("Попытка удаления питомца")
+    def test_delete_pet(self, create_pet):
+        with allure.step("Подготовка ID созданного питомца"):
+            pet_id = create_pet["id"]
+
+        with allure.step("Отправка запроса на удаление питомца"):
+            response = requests.delete(f"{BASE_URL}/pet/{pet_id}")
+
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 200, "Код ответа не совпал с ожидаемым"
+
+        with allure.step("Отправка запроса на просмотр удаленного питомца"):
+            response = requests.get(f"{BASE_URL}/pet/{pet_id}")
+
+        with allure.step("Проверка статуса ответа"):
+            assert response.status_code == 404, "Код ответа не совпал с ожидаемым"
